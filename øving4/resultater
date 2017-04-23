@@ -1,0 +1,9 @@
+Task 1.1
+a)
+minste verdi:  0.500006113865 med wi : [ 6.  0.]
+picture 1,1
+
+2 Forskjellige  η gir ulik tid før den kovergerer. Høyere  η  vil gjøre at den raskere går mot bunnpunktet
+og små  η  vil gjøre at den går sakte og forsiktig til bunnpunktet. For stor kan ha en tendens til å bomme
+helt siden den hopper for langt og går opp igjen. Med for liten  η  vil du måtte kjøre programet veldig lenge.
+Dette er grunnen til at det er vanlig å minske  η etter hvert som du tror du nærmer deg bunnpunktet.
