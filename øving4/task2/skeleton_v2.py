@@ -6,6 +6,7 @@ import matplotlib
 from matplotlib import cm
 import matplotlib
 import math
+import time
 matplotlib.style.use('ggplot')
 
 def derivertSigmoidWithInnerProduct(w,x,derivertPåWindex):
@@ -36,8 +37,8 @@ def stochast_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
         x=x_train[xy_index,:]
         y=y_train[xy_index]
         for i in range(dim):
-            update_grad = 1 ### something needs to be done here
-            w[i] = w[i] + learn_rate ### something needs to be done here
+            update_grad = -(y-logistic_wx(w,x))*derivertSigmoidWithInnerProduct(w,x,i)# something needs to be done here
+            w[i] = w[i] - learn_rate * update_grad ### something needs to be done here
     return w
 
 def batch_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
@@ -53,10 +54,38 @@ def batch_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
                 #sigma biten der du plusser deriverte loss for hvert punkt
                 update_grad+= -(y_train[n]-logistic_wx(w,x_train[n]))*derivertSigmoidWithInnerProduct(w,x_train[n],i)# something needs to be done here
             #oppdaterer med gjennomsnittlig derivert(punktLoss)
-            w[i] = w[i] + learn_rate * update_grad/num_n
+            w[i] = w[i] - learn_rate * update_grad/num_n
     return w
 
-def train_and_plot(xtrain,ytrain,xtest,ytest,training_method,learn_rate=0.1,niter=10):
+def train_and_plot(xtrain,ytrain,xtest,ytest,training_method,learn_rate=0.1,niter=1000):
+    plt.figure()
+
+    #train data
+    data = pd.DataFrame(np.hstack((xtrain,ytrain.reshape(xtrain.shape[0],1))),columns=['x','y','lab'])
+    ax=data.plot(kind='scatter',x='x',y='y',c='lab',cmap=cm.copper,edgecolors='black')
+
+    start = time.time()
+    #train weights
+    w=training_method(xtrain,ytrain,learn_rate,niter)
+    done = time.time()
+    elapsed = done - start
+    print(" Iterations: ", niter)
+    print(", Learning Rate: ", learn_rate)
+    print(", Training time: ", elapsed)
+
+    error=[]
+    y_est=[]
+    for i in range(len(ytest)):
+        error.append(np.abs(classify(w,xtest[i])-ytest[i]))
+        y_est.append(classify(w,xtest[i]))
+    y_est=np.array(y_est)
+    data_test = pd.DataFrame(np.hstack((xtest,y_est.reshape(xtest.shape[0],1))),columns=['x','y','lab'])
+    data_test.plot(kind='scatter',x='x',y='y',c='lab',ax=ax,cmap=cm.coolwarm,edgecolors='black')
+    print ("error=",np.mean(error))
+    plt.show()
+    return w
+
+def train_and_plot_errors(xtrain,ytrain,xtest,ytest,training_method,learn_rate=0.1,niter=1000):
     plt.figure()
     #train data
     data = pd.DataFrame(np.hstack((xtrain,ytrain.reshape(xtrain.shape[0],1))),columns=['x','y','lab'])
@@ -74,15 +103,13 @@ def train_and_plot(xtrain,ytrain,xtest,ytest,training_method,learn_rate=0.1,nite
     data_test.plot(kind='scatter',x='x',y='y',c='lab',ax=ax,cmap=cm.coolwarm,edgecolors='black')
     print ("error=",np.mean(error))
     plt.show()
-
     return w
-
-x_train=np.loadtxt("data/data_small_separable_train.csv",usecols=(0,1))
-y_train= np.loadtxt("data/data_small_separable_train.csv",usecols=(2))
-x_test= np.loadtxt("data/data_small_separable_test.csv",usecols=(0,1))
-y_test= np.loadtxt("data/data_small_separable_test.csv",usecols=(2))
+x_train=np.loadtxt("data/data_big_nonsep_train.csv",usecols=(0,1))
+y_train= np.loadtxt("data/data_big_nonsep_train.csv",usecols=(2))
+x_test= np.loadtxt("data/data_big_nonsep_test.csv",usecols=(0,1))
+y_test= np.loadtxt("data/data_big_nonsep_test.csv",usecols=(2))
 
 print(x_train.shape)
-train_and_plot(x_train,y_train,x_test,y_test,batch_train_w)
+train_and_plot(x_train,y_train,x_test,y_test,stochast_train_w,learn_rate=0.1,niter=100)
 
 

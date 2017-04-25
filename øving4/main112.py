@@ -8,48 +8,45 @@ def sigmoid(z):
 def stepFunction(w,x):
     return sigmoid(np.inner(w,x))
 
-
-
 def Lsimple(w):
-    value=pow(stepFunction(w,[0,1])-1,2) + pow(stepFunction(w,[0,1]),2)  + pow(stepFunction(w,[1,1])-1,2)
+    value=(stepFunction(w,[1,0])-1)**2 + (stepFunction(w,[0,1]))**2 + (stepFunction(w,[1,1])-1)**2
     return value
 
 def derivertSigmoidWithInnerProduct(w,x,derivertPåWindex):
-    value= -1*  math.pow(stepFunction(w,x),2)
-    value=value* -x[derivertPåWindex]* np.exp(-np.inner(w,x))
+    value=  (stepFunction(w,x)**2) * x[derivertPåWindex]* np.exp(-np.inner(w,x))
     return value
 
 
 def deltaLsimple(w):
-    dw1 = 2*(stepFunction(w,[1,0])-1)*derivertSigmoidWithInnerProduct(w,[1,0],0)+\
-      2*(stepFunction(w,[0,1]))*derivertSigmoidWithInnerProduct(w,[0,1],0) +\
-      2*(stepFunction(w,[1,1])-1)*derivertSigmoidWithInnerProduct(w,[1,1],0)
+    dw1 = (stepFunction(w,[1,0])-1)*derivertSigmoidWithInnerProduct(w,[1,0],0)+\
+      (stepFunction(w,[1,1])-1)*derivertSigmoidWithInnerProduct(w,[1,1],0)
 
-    dw2 = 2*(stepFunction(w,[1,0])-1)*derivertSigmoidWithInnerProduct(w,[1,0],1) +\
-         2*(stepFunction(w,[0,1]))*derivertSigmoidWithInnerProduct(w,[0,1],1) + \
-         2*(stepFunction(w,[1,1])-1)*derivertSigmoidWithInnerProduct(w,[1,1],1)
-    # print("w1: ",dw1 ," w2: " ,dw2)
+    dw2 =  (stepFunction(w,[0,1]))*derivertSigmoidWithInnerProduct(w,[0,1],1) + \
+         (stepFunction(w,[1,1])-1)*derivertSigmoidWithInnerProduct(w,[1,1],1)
+
     return (dw1,dw2)
 
-def updateRule(oldW,stepLength):
+def updateRule(oldW, learningRate):
     oldW1=oldW[0]
     oldW2=oldW[1]
     gradients= deltaLsimple(oldW)
-    newW1 = oldW1 - stepLength * gradients[0]
-    newW2 = oldW2 - stepLength * gradients[1]
-    print("gradients: ",gradients)
-    print("w: " ,newW1,newW2)
+    newW1 = oldW1 - learningRate * gradients[0]
+    newW2 = oldW2 - learningRate * gradients[1]
+    # print("gradients: ",gradients)
+    # print("w: " ,newW1,newW2)
     return [newW1,newW2]
 
-def runGradientDecent(generations,stepLength,oneRunValues,oneRunScore):
-    nextW = [-3, 5]
+def runGradientDecent(iterations, learningRate, oneRunValues):
+    nextW = [-7, -7]
+    oneRunScore=[]
+    # print("score: ", Lsimple(nextW))
 
-    for n in range(generations):
-        nextW = updateRule(nextW, stepLength)
+    for n in range(iterations):
+        nextW = updateRule(nextW, learningRate)
         oneRunValues.append(nextW)
         oneRunScore.append(Lsimple(nextW))
-        print("score: ",Lsimple(nextW) )
-    return nextW
+        # print("score: ",Lsimple(nextW) )
+    return oneRunScore
 
 def findBestW(wGrid,LsimpleListe):
     for row in range(len(wGrid)):
@@ -86,24 +83,32 @@ findBestW(wGrid,LsimpleList)
 
 LowestValuesFromGradientDecent=[]
 oneRunW=[]
-oneRunScore=[]
+allLearningRateRuns=[]
 # for generation in [1,10,100,1000]:
 # for stepLength in [0.0001,0.001,0.01,0.1,1,10,100,1000]:
-for stepLength in [0.11]:
-    nextW=runGradientDecent(1000,stepLength,oneRunW,oneRunScore)
+
+
+for stepLength in [0.1,0.01,0.0001]:
+    allLearningRateRuns.append(runGradientDecent(10000,stepLength,oneRunW))
     # LowestValuesFromGradientDecent.append(Lsimple(nextW))
 
-oneRunLowestScore= min(oneRunScore)
-index= oneRunScore.index(oneRunLowestScore)
-bestWithGradientDecentW = oneRunW[index]
-
-
-print("best score: ",oneRunLowestScore, "with w: ", bestWithGradientDecentW)
 
 import matplotlib.pyplot as plt
-plt.plot(oneRunScore)
-# plt.plot(oneRunW)
+plt.figure(1)
 
-# plt.suptitle('test title', fontsize=20)
-plt.ylabel('Value of Lsimple (loss)')
+# Place a legend above this subplot, expanding itself to
+# fully use the given bounding box.
+
+labels=['0,1','0,01','0.0001']
+for oneRunScore,label in zip(allLearningRateRuns,labels):
+    plt.plot(oneRunScore,label=label)
+#
+plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+           ncol=2, mode="expand", borderaxespad=0.)
+
+# # plt.suptitle('test title', fontsize=20)
+# plt.yscale("log")
+# plt.ylabel('Value of Lsimple(w)')
+# plt.grid(True)
+
 plt.show()

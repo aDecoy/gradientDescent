@@ -1,6 +1,7 @@
 
 import math
 import numpy as np
+import tkinter
 
 def innerProduct(w,x):
     product=0
@@ -15,7 +16,7 @@ def stepFunction(w,x):
 
 
 def Lsimple(w):
-    value=pow(stepFunction(w,[0,1])-1,2) + pow(stepFunction(w,[0,1]),2)  + pow(stepFunction(w,[1,1])-1,2)
+    value=pow(stepFunction(w,[1,0])-1,2) + pow(stepFunction(w,[0,1]),2)  + pow(stepFunction(w,[1,1])-1,2)
     return value
 
 
